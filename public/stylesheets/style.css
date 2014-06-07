@@ -1,0 +1,33 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+a {
+  color: #00b7ff;
+}
+
+/*masthead*/
+.as-masthead{
+	position:relative;
+	padding:30px 15px;
+	text-align:center;
+	text-shadow:0 1px 0 rgba(0,0,0,0.15);
+}
+.as-masthead h1{
+	font-size:50px;
+	line-height:1;
+}
+@media (min-width:768px){
+	.as-masthead {
+		text-align:left;
+		padding-top:140px;
+		padding-bottom:140px;
+	}
+	.as-masthead h1{
+		font-size:100px;
+	}
+	.as-masthead .lead{
+		margin-right:25%;
+		font-size:30px;
+	}
+}
