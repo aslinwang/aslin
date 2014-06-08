@@ -9,6 +9,9 @@ var user = require('./routes/user');
 var http = require('http');
 var path = require('path');
 
+//modules require
+var mobi = require('./modules/mobi/index');
+
 var app = express();
 
 // all environments
@@ -38,9 +41,12 @@ app.get('/', routes.index);
 app.get('/users', user.list);
 //app.get('/^\/user\/:([^\/]+)\/?/', function(req,res){
 app.get('/user/:id', function(req,res){
-	console.log(req.params);
+	//console.log(req.params);
 	res.send(req.params.id);
-})
+});
+
+//modules init
+mobi.init(app);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

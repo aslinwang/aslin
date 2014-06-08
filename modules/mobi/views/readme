@@ -1,0 +1,3 @@
+the views of module
+common view is in the /views directory
+common view is in the form of 'include ../../../views'

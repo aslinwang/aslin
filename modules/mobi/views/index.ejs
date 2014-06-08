@@ -1,0 +1,54 @@
+<% include ../../../views/head  %>    
+<% include ../../../views/navbar %>
+<!--content-->
+<main>
+  <div class="jumbotron">
+    <h1>Mobi Maker!</h1>
+    <p>A useful tools to transform html pages to mobi file that is suited to be read on kindle</p>
+    <!--<p><a class="btn btn-primary btn-lg" role="button">Learn more</a></p>-->
+  </div>
+
+  <form class="form-horizontal mobiform" role="form">
+    <div class="form-group">
+      <label for="inputTitle" class="col-sm-2 control-label">Title<span class="red">*</span></label>
+      <div class="col-sm-10">
+        <input class="form-control" id="inputTitle">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputAuthor" class="col-sm-2 control-label">Author<span class="red">*</span></label>
+      <div class="col-sm-10">
+        <input class="form-control" id="inputAuthor">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputCover" class="col-sm-2 control-label">Cover</label>
+      <div class="col-sm-10">
+        <input type="file" id="inputCover">
+      </div>
+    </div>
+    <div class="form-group">
+      <label for="inputUrl" class="col-sm-2 control-label">Page Url<span class="red">*</span></label>
+      <div class="mobiurls">
+        <div class="col-sm-10">
+          <input class="form-control inputUrl" id="inputUrl">
+        </div>
+        <div class="col-sm-10 mobiurl">
+          <input class="form-control inputUrl">
+        </div>
+        <div class="col-sm-10 mobiurl">
+          <input class="form-control inputUrl">
+        </div>
+        <button class="btn btn-info urlbtn">Add Page Url</button>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button class="btn btn-success btnTrans">Transform to Mobi</button>
+      </div>
+    </div>
+  </form>
+
+</main>
+<% include ../../../views/foot %>    

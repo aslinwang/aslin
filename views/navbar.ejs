@@ -1,3 +1,8 @@
+<%
+if(typeof active == 'undefined'){
+	active = 'index';
+}
+%>
 <header class="navbar navbar-inverse navbar-fixed-top">
 	<div class="container">
 		<div class="navbar-header">
@@ -5,9 +10,8 @@
 		</div>
 		<nav class="navbar-collapse collapse">
 			<ul class="nav navbar-nav">
-				<li class=""><a href="/trans">Cloud Trans</a></li>
-				<li class=""><a href="/url2qr">Url To Qrcode</a></li>
-				<li class=""><a href="/docs">Docs</a></li>
+				<li class="<% if(active == 'mobi'){ %>active<% } %>"><a href="/mobi">MobiMaker</a></li>
+				<li class="<% if(active == 'fc'){ %>active<% } %>"><a href="/fc">Fc</a></li>
 			</ul>
 		</nav>
 	</div>

@@ -1,5 +1,15 @@
+<%
+if(typeof moduleJs == 'undefined'){
+  moduleJs = '';
+}
+%>
 <!--foot template-->
   </body>
   <script type='text/javascript' src='/javascripts/lib/jquery-2.0.3.min.js' ></script>
   <script type='text/javascript' src='/javascripts/lib/bootstrap.min.js' ></script>
+
+  <% if(moduleJs!=''){ %>
+  <script type='text/javascript' src='<%=moduleJs%>' ></script>
+  <% } %>
+
 </html>
