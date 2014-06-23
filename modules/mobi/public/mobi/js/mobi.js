@@ -1,6 +1,7 @@
 ;
 (function(){
 var parseApi = 'http://' + document.location.host + '/mobi/trans';
+var mobiData = null;
 var parseData = function(el){
   //@todo validate form
   
@@ -26,14 +27,45 @@ var parseData = function(el){
 };
 
 var send = function(data){
-  console.log(data);
+  var btnPreview = $('.btnPreview');
   $.post(parseApi, data, function(data){
     console.log(data);
+    if(data.code == '0'){
+      mobiData = data.data;
+      btnPreview.show();
+    }
   });
+};
+
+//下载mobi文件，ajax content
+var download = function(){
+
 };
 
 $('.btnTrans').click(function(e){
   parseData($('.mobiform'));
+
+  e.preventDefault();
+});
+
+$('.btnPreview').click(function(e){
+  console.log(mobiData);
+  var content='';
+  $.each(mobiData, function(idx,item){
+    if(item.content){
+      content += item.content;
+    }
+  });
+  $(this).dialog({
+    width : 850,
+    height : 500,
+    title : '预览',
+    content : content,
+    ok : '下载',
+    okfun : function(){
+
+    }
+  });
 
   e.preventDefault();
 });

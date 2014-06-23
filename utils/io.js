@@ -4,8 +4,10 @@
  */
 
 exports.CODES = {
+  '0' : 'success',
   '-1001' : 'request error!',//there is error when request
-  '-1002' : 'can not get content!'
+  '-1002' : 'can not get content!',
+  '-1003' : 'data invalid'
 };
 
 //将返回内容格式化为json数据

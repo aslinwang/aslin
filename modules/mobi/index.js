@@ -23,59 +23,86 @@ var router = function(req, res){
 };
 
 //parse raw html page content
-var parse = function(url){
+var parse = (function(){
+  //'http://aslinwang.github.io/2014/06/fiddler-console/'
+  var jsons = [];
   var defer = q.defer();
-  var data = {
-    token : config.TOKEN,
-    url : url
+
+  var action = function(urls){
+    var url = urls.shift();
+    if(!url){
+      defer.resolve(jsons);
+      jsons = [];
+      return
+    }
+    console.log(url);
+    var data = {
+      token : config.TOKEN,
+      url : url
+    }
+    var req = https.request({
+      hostname : 'readability.com',
+      port : 443,
+      method : 'GET',
+      path : '/api/content/v1/parser?' + qs.stringify(data)
+    }, function(res){
+      var _chunk;
+      res.setEncoding('utf-8');
+      res.on('data', function(chunk){
+        _chunk = _chunk ? _chunk + chunk : chunk;
+      });
+      res.on('end', function(){
+        var json = JSON.parse(_chunk);
+        jsons.push(json);
+
+        action(urls);
+      });
+    });
+
+    req.on('error', function(){
+      defer.reject('parse request error!');
+    });
+
+    req.end();
+
+    return defer.promise;
   }
-  var req = https.request({
-    hostname : 'readability.com',
-    port : 443,
-    method : 'GET',
-    path : '/api/content/v1/parser?' + qs.stringify(data)
-  }, function(res){
-    var _chunk;
-    res.setEncoding('utf-8');
-    res.on('data', function(chunk){
-      _chunk = _chunk ? _chunk + chunk : chunk;
-    });
-    res.on('end', function(){
-      var json = JSON.parse(_chunk);
-      defer.resolve(json);
-    });
-  });
 
-  req.on('error', function(){
-    defer.reject('parse request error!');
-  });
+  return action;
+}());
 
-  req.end();
+//系统调用kindlegen生成mobi文件  html->mobi
+var download = function(req, res){
 
-  return defer.promise;
 };
 
 //start transform
 var trans = function(req, res){
   var data = req.body;
-  
-  //validate params
-  util_v.validate([], data);
-
   var words = {
     err : 'something go wrong when parsing url'
   };
-
-  parse('http://aslinwang.github.io/2014/06/fiddler-console/')
-  .done(function(data){
-    if(data && data.content){
-      res.send(data.content);
-    }
-    else{
-      res.send(util_io.formatResJson('-1002', words.err));
-    }
-  }, function(err){
-     res.send(util_io.formatResJson('-1001', err));
+ 
+  //validate params
+  util_v.validate(util_v.REQUIRED, data.inputTitle, 'input title error')
+  .then(util_v.REQUIRED, data.inputAuthor, 'input author error')
+  .then([util_v.REQUIRED, util_v.URL], data.inputUrl, 'input url error')
+  .pass(function(){
+    //@tode get urls
+    parse(data.inputUrl)
+    .done(function(data){
+      if(data){
+        res.send(util_io.formatResJson('0', '', data));
+      }
+      else{
+        res.send(util_io.formatResJson('-1002', words.err));
+      }
+    }, function(err){
+       res.send(util_io.formatResJson('-1001', err));
+    });
+  }).block(function(reason){
+    //校验失败
+    res.send(util_io.formatResJson('-1003', reason[0].type + '-' + reason[0].name));
   });
 };
 
@@ -84,4 +111,5 @@ exports.init = function(app){
 
   app.get('/mobi', router);
   app.post('/mobi/trans', trans);
+  app.post('/mobi/download', download)
 };
