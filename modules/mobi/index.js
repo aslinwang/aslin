@@ -74,6 +74,12 @@ var parse = (function(){
   return action;
 }());
 
+//cure html string to kindlegen
+var cureHtml = function(str){
+	str = str.replace(/<img>/g, '');//remove img tags that have no src attribute
+	return str;
+}
+
 //info = {
 //  file : '20140706',//文件名不带后缀
 //  title : 'mobi demo',
@@ -98,6 +104,7 @@ var makeMobi = function(info){
     '</html>'
   ].join('');
   html = util.txTpl(html, info);
+	html = cureHtml(html);
   fs.writeFile(dest, html, function(e){
     //html -> mobi
     cp.exec('kindlegen ' + dest, function(err, stdout, stderr){
