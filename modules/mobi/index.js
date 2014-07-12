@@ -6,8 +6,11 @@ var path = require('path');
 var https = require('https');
 var qs = require('querystring');
 var q = require('q');
+var fs = require('fs');
+var cp = require('child_process');
 
 var config = require('./config');
+var util = require('../../utils/util');
 var util_io = require('../../utils/io');
 var util_v = require('../../utils/validate');
 
@@ -71,6 +74,39 @@ var parse = (function(){
   return action;
 }());
 
+//info = {
+//  file : '20140706',//文件名不带后缀
+//  title : 'mobi demo',
+//  author : 'aslinwang',
+//  cover : 'http://xxx.jpg',
+//  pages : []
+//}
+var makeMobi = function(info){
+  //make html 文件操作
+  var dest = './modules/mobi/data/' + info.file + '.html';
+  var html = [
+    '<html>',
+      '<head>',
+        '<title><%=title%></title>',
+      '</head>',
+      '<body>',
+      '<%for(var i=0;i<pages.length;i++){%>',
+        '<h1><%=pages[i].title%></h1>',
+        '<%=pages[i].content%>',
+      '<%}%>',
+      '</body>',
+    '</html>'
+  ].join('');
+  html = util.txTpl(html, info);
+  fs.writeFile(dest, html, function(e){
+    //html -> mobi
+    cp.exec('kindlegen ' + dest, function(err, stdout, stderr){
+      console.log('kindlegen log>>>', stdout);
+      console.log('kindlegen err>>>', stderr);
+    });
+  });
+};
+
 //系统调用kindlegen生成mobi文件  html->mobi
 var download = function(req, res){
 
@@ -106,10 +142,25 @@ var trans = function(req, res){
   });
 };
 
+//在shell中转换文件
+var shellTrans = function(file){
+  var config = require('./data/' + file);
+  parse(config.urls).done(function(data){
+    makeMobi(util.extend(config, {pages : data, file : file.replace('.js', '')}));
+  });
+};
+
 exports.init = function(app){
   app.use(express.static(path.join(__dirname, 'public')));//将mobi模块的素材目录暴露出来供外部访问，这样是为了保证模块独立在一个目录下
 
   app.get('/mobi', router);
   app.post('/mobi/trans', trans);
-  app.post('/mobi/download', download)
+  app.post('/mobi/download', download);
+
+  if(app.command && app.command == '-mobi'){
+    var cfg = process.argv[3];
+    if(cfg){
+      shellTrans(cfg);
+    }
+  }
 };

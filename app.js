@@ -33,6 +33,11 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+//-mobi cfgFile 命令行获取mobi文件,cfgFile为配置文件 eg : node app.js -mobi 20140706.js
+if(process.argv.length > 2){
+  app.command = process.argv[2];
+}
+
 app.param('id', function(req, res, next, id){
 	next();
 });
@@ -48,6 +53,8 @@ app.get('/user/:id', function(req,res){
 //modules init
 mobi.init(app);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
-});
+if(!app.command){
+  http.createServer(app).listen(app.get('port'), function(){
+    console.log('Express server listening on port ' + app.get('port'));
+  });
+}
