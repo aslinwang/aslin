@@ -99,10 +99,14 @@ var makeMobi = function(info){
       '<%for(var i=0;i<pages.length;i++){%>',
         '<h1><%=pages[i].title%></h1>',
         '<%=pages[i].content%>',
+        '<br /><br />',
       '<%}%>',
       '</body>',
     '</html>'
   ].join('');
+  for(var i = 0; i < info.pages.length; i++){
+    info.pages[i].title = util.encodeGB2312(info.pages[i].title);
+  }  
   html = util.txTpl(html, info);
 	html = cureHtml(html);
   fs.writeFile(dest, html, function(e){

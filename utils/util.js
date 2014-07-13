@@ -37,108 +37,50 @@ exports.extend = function(){
  *    4、  实例demo和测速demo: http://f2e.org/jt/mtpl
  */
 exports.txTpl = (function(){
-  var cache = {};
-  return function (str, data, startSelector, endSelector, isCache){
-    var t     = this, 
-      d       = data, 
-      //el      = document.getElementById(str),//在node中，不存在DomElement
-      //tpl     = el ? el.innerHTML : str,        
-      tpl     = str,
-      isCache   = isCache != undefined ? isCache : true,
-      valueArr  = [],       
-      fn      = function(){}, 
-      htmlEncode  = function(s){ return s;
-        return s
-          .replace(/&/g,'&amp;')
-          .replace(/>/g,'&gt;')
-          .replace(/</g,'&lt;')
-          .replace(/"/g,'&quot;')
-          .replace(/'/g,'&#39;');
-      },
-      compileFn = function(args, strFormatTpl){
-        return new Function(propArr, 
-          "var mTpl_htmlEncode="+ htmlEncode.toString() + 
-          ";\n var s='';\n s+='" + strFormatTpl + "';\n return s");
-      },      
-      resetChar   = function(c, str){
-        var a=c, f=function(s){ 
-          if(str.indexOf(s) >-1){
-            return f(s+a);
-          }
-          return s;
-        };        
-        return f(a);
-      },
-      recoverChar = function(s){
-        return s
-          .replace(new RegExp(r,'g'),'\r')
-          .replace(new RegExp(n,'g'),'\n')
-          .replace(/mTpl_comment\d+;/g, function(l){
-            var i=l.slice(12, l.length-1);
-            return mTpl_comment[i];
-          });
-      },
-      mTpl_comment= { length : 0 },
-      l     = resetChar('L', tpl),
-      r     = resetChar('R', tpl),
-      n     = resetChar('N', tpl);
-
+  var cache={};
+  return function(str, data, startSelector, endSelector, isCache){
+    var fn, d=data, valueArr=[], isCache=isCache!=undefined ? isCache : true;
     if(isCache && cache[str]){
-      for (var i=0, list=cache[str].propList, len=list.length; i<len; i++){
-        valueArr.push(d[list[i]]);
-      } 
+      for (var i=0, list=cache[str].propList, len=list.length; i<len; i++){valueArr.push(d[list[i]]);}	
       fn=cache[str].parsefn;
     }else{
-
-      var a = startSelector, b = endSelector;       
-      if(!tpl){return ''}
-      if(!a || !b){a = '<' + '%'; b = '%' + '>';}       
-      if(!(tpl.indexOf(a) > -1 && tpl.indexOf(b) > -1)){return tpl}
-
-      var formatTpl = function(str, isError){
-        var N=isError? '\n' : '';
-        r=isError? '' : r;
-        n=isError? '' : n;
-
-        var eb  = (function(s){return s.replace(/([.*+?^=!:${}()|[\]\/\\])/g, '\\$1')})(b),
-          reg = new RegExp(l+'(?:(?!'+ eb +')[\\s\\S])*'+ eb +'|(\'+)', 'g');   
-
+      var propArr=[], formatTpl=(function(str, startSelector, endSelector){
+        if(!startSelector){var startSelector='<%';}
+        if(!endSelector){var endSelector='%>';}
+        var tpl=/[^\w\d_:\.-]/g.test(str) == false ? document.getElementById(str).innerHTML : str;
         return tpl
-          .replace(/<!--(?:(?!-->)[\s\S])*-->/g, function(l){
-            var i=mTpl_comment.length++;
-            mTpl_comment[i]=l;
-            return 'mTpl_comment'+i+';';
-          })
-          .split('\\').join('\\\\')
-          .replace(/[\r]/g, r)
-          .replace(/[\n]/g, n)
-          .split(a).join(l)
-          .replace(reg, function(l,$1){return $1 ? new Array($1.length + 1).join('\r') : l})
-          .replace(new RegExp(l+'=(.*?)'+b,'g'), "';"+N+" s+=mTpl_htmlEncode(String($1));"+N+" s+='")
-          .split(l).join("';"+N)    
-          .split(b).join(N+' s+=\'')  
-          .split('\r').join('\\\'');
-      };
-
-      var p, propArr = [];
-      for (p in d){ 
-        propArr.push(p);
-        valueArr.push(d[p]);
-      }
-
-      fn = compileFn(propArr, formatTpl(str));
-      isCache && (cache[str] = {parsefn : fn, propList : propArr});
+        .replace(/\\/g, "\\\\") 											
+        .replace(/[\r\t\n]/g, " ") 											
+        .split(startSelector).join("\t")										
+        .replace(new RegExp("((^|"+endSelector+")[^\t]*)'","g"), "$1\r")	
+        .replace(new RegExp("\t=(.*?)"+endSelector,"g"), "';\n s+=$1;\n s+='")  					
+        .split("\t").join("';\n")											
+        .split(endSelector).join("\n s+='")		
+        .split("\r").join("\\'");		
+      })(str, startSelector, endSelector);	
+      for (var p in d) {propArr.push(p);valueArr.push(d[p]);}	
+      fn = new Function(propArr, " var s='';\n s+='" + formatTpl+ "';\n return s");
+      isCache && (cache[str]={parsefn:fn, propList:propArr});
     }
-
-    var s;
 
     try{
-      s = fn.apply(t, valueArr);
+      return fn.apply(null,valueArr);
     }catch(e){
-      fn = compileFn(propArr, formatTpl(str,true));
-      s = fn.apply(t, valueArr);
-    }
+      function globalEval(strScript) {
+        var ua = navigator.userAgent.toLowerCase(), head=document.getElementsByTagName("head")[0], script = document.createElement("script"); 
+        if(ua.indexOf('gecko') > -1 && ua.indexOf('khtml') == -1){window['eval'].call(window, fnStr); return}				
+        script.innerHTML = strScript; 
+        head.appendChild(script); 
+        head.removeChild(script);
+      }	
 
-    return recoverChar(s);  
+      var fnName='txTpl' + new Date().getTime(), fnStr='var '+ fnName+'='+fn.toString();
+      globalEval(fnStr);
+      window[fnName].apply(null,valueArr);		
+    }			
   }
 }())
+
+exports.encodeGB2312 = function(str){
+  return str.replace(/[^\u0000-\u00FF]/g,function($0){return escape($0).replace(/(%u)(\w{4})/gi,"&#x$2;")});
+}
