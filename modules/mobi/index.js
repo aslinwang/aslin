@@ -111,18 +111,6 @@ var fetchMedia = (function(){
   function download(){
     var media = medias.pop();
     if(media && media.url){
-      /*
-      http.get(media.url, function(res){
-        console.log(res.statusCode);
-        if(res.statusCode == 200){
-          get();
-        }
-
-        res.on('data', function(chunk){
-          chunk.pipe(fs.createWriteStream(res.filename));
-        });
-      });
-      */
       request(media.url).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
         download();
       });
