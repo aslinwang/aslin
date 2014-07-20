@@ -4,10 +4,13 @@
 var express = require('express');
 var path = require('path');
 var https = require('https');
+var http = require('http');
+var url = require('url');
 var qs = require('querystring');
 var q = require('q');
 var fs = require('fs');
 var cp = require('child_process');
+var request = require('request');
 
 var config = require('./config');
 var util = require('../../utils/util');
@@ -15,6 +18,9 @@ var util_io = require('../../utils/io');
 var util_v = require('../../utils/validate');
 
 var VIEW_PATH = '../modules/mobi/views/';//以app.set('views','')为准
+var DATA_PATH = './modules/mobi/data/';
+var matchObj = {};
+var mediaCnt = 0;
 
 var router = function(req, res){
   res.render(VIEW_PATH + 'index', {
@@ -74,6 +80,70 @@ var parse = (function(){
   return action;
 }());
 
+//transform online media link to local
+var parseMedia = function(content){
+  var matches = content.match(/src=\"[\w:\/\.\-\~]*\"/g);
+  var ret = content;
+  if(matches){
+    for(var i = 0; i < matches.length; i++){
+      var ext = matches[i].match(/.*(\.\w*)"/);
+      if(ext && ext.length == 2){
+        ext = ext[1];
+      }
+      else{
+        ext = '';
+      }
+      var url = matches[i].replace(/src="(.*)"/g, '$1');
+      matchObj[url] = (mediaCnt++ + ext);
+    }
+    for(var key in matchObj){
+      ret = util.strReplaceAll(ret, key, matchObj[key]);
+    }
+  }
+  return ret;
+}
+
+//fetch meida
+var fetchMedia = (function(){
+  var defer = q.defer();
+  var medias = [];
+
+  function download(){
+    var media = medias.pop();
+    if(media && media.url){
+      /*
+      http.get(media.url, function(res){
+        console.log(res.statusCode);
+        if(res.statusCode == 200){
+          get();
+        }
+
+        res.on('data', function(chunk){
+          chunk.pipe(fs.createWriteStream(res.filename));
+        });
+      });
+      */
+      request(media.url).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
+        download();
+      });
+    }
+    else{
+      defer.resolve();
+    }
+  }
+  return function(){
+    for(var key in matchObj){
+      medias.push({
+        url : key,
+        filename : matchObj[key]
+      });
+    }
+
+    download();
+    return defer.promise;
+  }
+}());
+
 //cure html string to kindlegen
 var cureHtml = function(str){
 	str = str.replace(/<img>/g, '');//remove img tags that have no src attribute
@@ -81,15 +151,15 @@ var cureHtml = function(str){
 }
 
 //info = {
-//  file : '20140706',//文件名不带后缀
 //  title : 'mobi demo',
 //  author : 'aslinwang',
 //  cover : 'http://xxx.jpg',
 //  pages : []
 //}
 var makeMobi = function(info){
+  DATA_PATH = DATA_PATH + info.dir;
   //make html 文件操作
-  var dest = './modules/mobi/data/' + info.file + '.html';
+  var dest = './modules/mobi/data/' + info.dir + info.title + '.html';
   var html = [
     '<html>',
       '<head>',
@@ -104,16 +174,21 @@ var makeMobi = function(info){
       '</body>',
     '</html>'
   ].join('');
+  var medias = [];
   for(var i = 0; i < info.pages.length; i++){
     info.pages[i].title = util.encodeGB2312(info.pages[i].title);
+    
+    info.pages[i].content = parseMedia(info.pages[i].content);
   }  
   html = util.txTpl(html, info);
 	html = cureHtml(html);
   fs.writeFile(dest, html, function(e){
-    //html -> mobi
-    cp.exec('kindlegen ' + dest, function(err, stdout, stderr){
-      console.log('kindlegen log>>>', stdout);
-      console.log('kindlegen err>>>', stderr);
+    fetchMedia().done(function(){
+      //html -> mobi
+      cp.exec('kindlegen ' + dest, function(err, stdout, stderr){
+        console.log('kindlegen log>>>', stdout);
+        console.log('kindlegen err>>>', stderr);
+      });
     });
   });
 };
@@ -155,9 +230,9 @@ var trans = function(req, res){
 
 //在shell中转换文件
 var shellTrans = function(file){
-  var config = require('./data/' + file);
+  var config = require('./data/' + file + '/index.js');
   parse(config.urls).done(function(data){
-    makeMobi(util.extend(config, {pages : data, file : file.replace('.js', '')}));
+    makeMobi(util.extend(config, {pages : data}));
   });
 };
 

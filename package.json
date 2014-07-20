@@ -11,5 +11,8 @@
     "stylus": "*",
     "mongodb": "*",
     "q": "*"
+  },
+  "devDependencies": {
+    "request": "~2.37.0"
   }
 }

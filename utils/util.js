@@ -84,3 +84,12 @@ exports.txTpl = (function(){
 exports.encodeGB2312 = function(str){
   return str.replace(/[^\u0000-\u00FF]/g,function($0){return escape($0).replace(/(%u)(\w{4})/gi,"&#x$2;")});
 }
+
+
+function escapeRegExp(str){
+  return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+}
+
+exports.strReplaceAll = function(str, find, replace){
+  return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
