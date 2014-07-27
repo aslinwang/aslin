@@ -111,9 +111,16 @@ var fetchMedia = (function(){
   function download(){
     var media = medias.pop();
     if(media && media.url){
-      request(media.url).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
+      try{
+        request(media.url).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
+          console.log(media.url + ' download success!');
+          download();
+        });  
+      }
+      catch(e){
+        console.log(media.url + ' download fail!');
         download();
-      });
+      }
     }
     else{
       defer.resolve();
@@ -135,7 +142,10 @@ var fetchMedia = (function(){
 //cure html string to kindlegen
 var cureHtml = function(str){
 	str = str.replace(/<img>/g, '');//remove img tags that have no src attribute
-	return str;
+
+  //str = str.replace(/<img(?!\ssrc=)[^>]*>?/g, '');//@todo 有的img tag没有src属性，需要干掉
+	
+  return str;
 }
 
 //info = {
@@ -167,7 +177,8 @@ var makeMobi = function(info){
     info.pages[i].title = util.encodeGB2312(info.pages[i].title);
     
     info.pages[i].content = parseMedia(info.pages[i].content);
-  }  
+  }
+  info.title = util.encodeGB2312(info.title);
   html = util.txTpl(html, info);
 	html = cureHtml(html);
   fs.writeFile(dest, html, function(e){
