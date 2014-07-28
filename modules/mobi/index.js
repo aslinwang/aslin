@@ -112,14 +112,21 @@ var fetchMedia = (function(){
     var media = medias.pop();
     if(media && media.url){
       try{
-        request(media.url).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
+				console.log('fetching ' + media.url);
+        request(media.url, function(err, res, body){
+					if(err){
+//						console.log(err);
+						console.log(media.url + ' fetch fail!');
+						download();
+					}
+				}).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
           console.log(media.url + ' download success!');
           download();
         });  
       }
       catch(e){
         console.log(media.url + ' download fail!');
-        download();
+//        download();
       }
     }
     else{
@@ -141,9 +148,16 @@ var fetchMedia = (function(){
 
 //cure html string to kindlegen
 var cureHtml = function(str){
-	str = str.replace(/<img>/g, '');//remove img tags that have no src attribute
+	//remove img tags that have no src attribute
+	str = str.replace(/<img>/g, '');
 
-  //str = str.replace(/<img(?!\ssrc=)[^>]*>?/g, '');//@todo 有的img tag没有src属性，需要干掉
+	//some img tags have no src attribute but have others, remove too
+	str = str.replace(/<img([^>]*)>?/g, function(str, p, offset, s){//str - matched string; p - group; offset - group offset; s - source string
+		if(str.indexOf(' src="') == -1){
+			return "";
+		}
+		return str;
+	});
 	
   return str;
 }

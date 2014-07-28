@@ -13,6 +13,14 @@ function strReplaceAll(str, find, replace){
   return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
 }
 
+console.log(html);
+console.log(html.replace(/<img([^>]*)>?/g, function(str, p, offset, s){//str - matched string; p - group; offset - group offset; s - source string
+	if(str.indexOf(' src="') == -1){
+		return "";
+	}
+	return str;
+}));
+
 //var replace = html.replace(/src=\"[\w:\/\.]*/g, 'src="');
 /*
 for(var i = 0; i < match.length; i++){
@@ -55,7 +63,6 @@ var parsedHtml = parseMedia(html);
 //console.log(parsedHtml);
 //console.log(html);
 //console.log(html.replace(/<img[^>]*(?!\ssrc=)[^>]*>?/g, ''));
-console.log(html.replace(/<img[^>]*(src)[^>]*>?/g, ''));
 //console.log(html.match(/<img(?!\ssrc=)[^>]*>?/g));
 
 // var imgHtml = parsedHtml.match(/<img[^>]*/);
