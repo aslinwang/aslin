@@ -24,8 +24,8 @@ var mediaCnt = 0;
 
 var router = function(req, res){
   res.render(VIEW_PATH + 'index', {
-    title: 'Aslin`s Site', 
-    active: 'mobi', 
+    title: 'MobiMaker - Aslin`s Site',
+    active: 'mobi',
     moduleCss: '/mobi/css/mobi.css',
     moduleJs : '/mobi/js/mobi.js'
   });
@@ -122,7 +122,7 @@ var fetchMedia = (function(){
 				}).pipe(fs.createWriteStream(DATA_PATH + media.filename)).on('close', function(){
           console.log(media.url + ' download success!');
           download();
-        });  
+        });
       }
       catch(e){
         console.log(media.url + ' download fail!');
@@ -158,7 +158,7 @@ var cureHtml = function(str){
 		}
 		return str;
 	});
-	
+
   return str;
 }
 
@@ -189,7 +189,7 @@ var makeMobi = function(info){
   var medias = [];
   for(var i = 0; i < info.pages.length; i++){
     info.pages[i].title = util.encodeGB2312(info.pages[i].title);
-    
+
     info.pages[i].content = parseMedia(info.pages[i].content);
   }
   info.title = util.encodeGB2312(info.title);
@@ -217,7 +217,7 @@ var trans = function(req, res){
   var words = {
     err : 'something go wrong when parsing url'
   };
- 
+
   //validate params
   util_v.validate(util_v.REQUIRED, data.inputTitle, 'input title error')
   .then(util_v.REQUIRED, data.inputAuthor, 'input author error')

@@ -17,8 +17,8 @@ $.fn.dialog = (function(){
         '</div>',
         '<div class="modal-body">...</div>',
         '<div class="modal-footer">',
-          '<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>',
-          '<button type="button" class="btn btn-primary" data-dismiss="modal">Save changes</button>',
+          '<button type="button" class="btn btn-default no" data-dismiss="modal">Close</button>',
+          '<button type="button" class="btn btn-primary ok" data-dismiss="modal">Save changes</button>',
         '</div>',
       '</div>',
     '</div>',
@@ -26,7 +26,7 @@ $.fn.dialog = (function(){
   var okfun;
 
   var addEvents = function(){
-    $body.on('click', '.btn-primary', function(e){
+    $body.on('click', '.ok', function(e){
       if(okfun){
         okfun();
       }
@@ -39,6 +39,7 @@ $.fn.dialog = (function(){
    * @cfg {string} title 标题
    * @cfg {string} content 内容
    * @cfg {string} ok 确认按钮文案
+   * @cfg {string} no 取消按钮文案
    * @return {[type]}     [description]
    */
   return function(cfg){
@@ -65,7 +66,14 @@ $.fn.dialog = (function(){
       $('.modal-body', $body).html(cfg.content);
     }
     if(cfg.ok){
-      $('.btn-primary', $body).html(cfg.ok);
+      $('.ok', $body).html(cfg.ok);
+    }
+    if(!cfg.no){
+      $('.no', $body).hide();
+    }
+    else{
+      $('.no', $body).html(cfg.no);
+      $('.no', $body).show();
     }
     okfun = cfg.okfun;
   };

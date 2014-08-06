@@ -11,6 +11,7 @@ var path = require('path');
 
 //modules require
 var mobi = require('./modules/mobi/index');
+var hp = require('./modules/hp/index');
 
 var app = express();
 
@@ -52,6 +53,7 @@ app.get('/user/:id', function(req,res){
 
 //modules init
 mobi.init(app);
+hp.init(app);
 
 if(!app.command){
   http.createServer(app).listen(app.get('port'), function(){
