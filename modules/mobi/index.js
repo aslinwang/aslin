@@ -68,7 +68,7 @@ var parse = (function(){
       });
     });
 
-    req.on('error', function(){
+    req.on('error', function(e){
       defer.reject('parse request error!');
     });
 

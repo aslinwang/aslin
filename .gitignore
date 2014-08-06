@@ -1,5 +1,5 @@
 modules/mobi/config.js
 node_modules
-modules/mobi/data/**/*
+modules/mobi/data/**/*.*
 !modules/mobi/data/**/index.js
 *.swp
