@@ -171,7 +171,7 @@ var cureHtml = function(str){
 var makeMobi = function(info){
   DATA_PATH = DATA_PATH + info.dir;
   //make html 文件操作
-  var dest = './modules/mobi/data/' + info.dir + info.title + '.html';
+  var dest = './modules/mobi/data/' + info.dir + info.title.replace(/\s/g, '_') + '.html';
   var html = [
     '<html>',
       '<head>',
